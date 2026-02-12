@@ -15,7 +15,7 @@ def register():
     if response.status_code==201:
         print("user registered successfully")
     else:
-        print(f"===============ERROR=================\n",response.json())
+        print(f"=============ERROR==============\n",response.json())
 
 
 
