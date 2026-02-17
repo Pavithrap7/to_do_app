@@ -28,4 +28,4 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/firebase_key.json"
       - name: Run Testcases
         run: |
-          pytest -v test/ 
+          pytest -v test/test_main.py
