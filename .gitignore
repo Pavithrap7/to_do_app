@@ -8,5 +8,5 @@ __pycache__/
 *.pyd
 
 # Firebase secret
-app/firebase_key.json
+#app/firebase_key.json
 
