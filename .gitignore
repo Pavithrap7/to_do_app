@@ -1,1 +1,12 @@
+# Python virtual environment
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Firebase secret
 app/firebase_key.json
+
