@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException,status
 from typing import Optional
 from pydantic import BaseModel,EmailStr
-from firebase_config import db
+from app.firebase_config import db
 
 class Registration(BaseModel):
     name: str
