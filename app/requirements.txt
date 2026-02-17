@@ -3,3 +3,5 @@ uvicorn
 pydantic[email]
 firebase-admin
 pytest
+pytest-asyncio
+httpx
