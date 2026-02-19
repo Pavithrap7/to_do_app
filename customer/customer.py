@@ -2,7 +2,6 @@ import requests
 
 base_url="http://127.0.0.1:8000"
 
-
 def task(mail):
     while True:
         print("1.Create Task\t2.Show Tasks\t3.Remove Tasks\t4.Back")
@@ -19,7 +18,6 @@ def task(mail):
         if ans==4:
             break
 
-
 def register():
     name=input("Enter Name:")
     mail_id=input("Enter Mailid:")
@@ -35,9 +33,6 @@ def register():
     else:
         print(f"=============ERROR==============\n",response.json())
 
-
-
-
 def login():
     mail=input("Enter Mail_id:")
     password=input("Enter password:")
@@ -49,8 +44,6 @@ def login():
         print("================ERROR=============",response.json())
     task(mail)
 
-
-
 while True:
     print("========WELCOME TO TODO LIST==========")
     print("1.Register\n2.Login\n3.Exit")
@@ -61,4 +54,4 @@ while True:
         login()
     elif ans==3:
         break
-    
+
