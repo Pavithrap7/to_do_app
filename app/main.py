@@ -40,6 +40,8 @@ def login(user_log:Login):
     user_data=user.to_dict()
     if user_log.password==user_data["password"]:
         return {"message":"login successfull"}
+    else:
+        raise HTTPException(status_code=401,detail="invalid password")
 
 
 
