@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,9 +24,9 @@ jobs:
 
       - name: Setup Firebase Key
         run: |
-          echo '${{ secrets.FIREBASE_KEY }}' > app/firebase_key.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/app/firebase_key.json" >> $GITHUB_ENV 
+           echo '${{ secrets.FIREBASE_KRY }}' > app/firebase_key.json
+           echo "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/app/firebase_key.json" >> $GITHUB_ENV
+
       - name: Run Testcases
         run: |
           pytest -v test/test_main.py
-
