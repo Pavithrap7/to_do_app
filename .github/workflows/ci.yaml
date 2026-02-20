@@ -29,4 +29,4 @@ jobs:
 
       - name: Run Testcases
         run: |
-          pytest -v test/test_main.py
+          pytest -v --capture=no test/test_main.py
