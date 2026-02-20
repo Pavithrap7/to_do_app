@@ -13,9 +13,9 @@ def test_login_correct_password():
     assert "message" in response.json()
 
 def test_login_incorrect_password():
-    response=client.post("/login",json={"mail_id":"tes1t@gmail.com","password":"test123"})
+    response=client.post("/login",json={"mail_id":"test@gmail.com","password":"test123"})
     assert "detail" in response.json()
 
 def test_login_invalid_username():
-    response=client.post("/login",json={"name":"123","mail_id":"test@gmail.com","password":"testpass"})
+    response=client.post("/login",json={"mail_id":"test1@gmail.com","password":"testpass"})
     assert "detail" in response.json()
