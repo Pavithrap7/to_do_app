@@ -51,8 +51,9 @@ def create_tast(task:Create_Task):
         user_ref=db.collection("users").document(task.mail).collection("tasks").document()
         user_ref.set({"name":task.task_name,"description":task.description,"status":"pending"})
         return {"message":"Task added successfully"}
-    else:
-        raise HTTPException()
+    except err as Exception:
+        return err
+        
 
 
 
