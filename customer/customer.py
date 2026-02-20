@@ -45,9 +45,9 @@ def login():
     response=requests.post(f"{base_url}/login",json=payload)
     if response.status_code==200:
         print("login successfull")
+        task(mail)
     else:
         print("================ERROR=============",response.json())
-    task(mail)
 
 
 
