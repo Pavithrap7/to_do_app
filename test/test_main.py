@@ -25,7 +25,7 @@ def test_create_task_without_description():
     assert "message" in response.json()
 
 def test_create_task_with_description():
-    response=clinet.post("/create_task",json={"mail":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
+    response=client.post("/create_task",json={"mail":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
     assert "message" in response.json()
 
     
