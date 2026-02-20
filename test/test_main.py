@@ -19,3 +19,13 @@ def test_login_incorrect_password():
 def test_login_invalid_username():
     response=client.post("/login",json={"mail_id":"test1@gmail.com","password":"testpass"})
     assert "detail" in response.json()
+
+def test_create_task_without_description():
+    response=client.post("/create_task",json={"mail_id":"test@gmail.com","task_name":"test_task1"})
+    assert "message" in response.json()
+
+def test_create_task_with_description():
+    response=clinet.post("/create_task",json={"maik_id":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
+    assert "message" in response.json()
+
+    
