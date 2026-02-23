@@ -55,6 +55,20 @@ def create_tast(task:Create_Task):
         return err
         
 
+@app.get("/show_tasks/{mail_id}")
+def show_task(mail_id:str):
+    try:
+        user_ref=db.collection("users").document(mail_id).collection("tasks").document()
+        tasks=user_ref.stream()
+        task=[]
+        for i in tasks:
+            task.append(i.to_dict())
+        if not task:
+            raise HTTPException(detail="no tasks found")
+        return task
+    except err as Exception:
+        return err
+
 
 
 

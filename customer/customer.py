@@ -16,6 +16,13 @@ def task(mail):
                 print("Task added successfully")
             else:
                 print("================ERROR==============",response.json())
+        if ans==2:
+            response=requests.get("show_tasks/{mail}")
+            for i in response:
+                task_name=i.get("name")
+                des=i.get("description","no description")
+                status=i.get("status")
+                print(f"{task_name}\t{des}\t{status}")
         if ans==4:
             break
 
