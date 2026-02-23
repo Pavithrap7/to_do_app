@@ -32,4 +32,4 @@ def test_show_tasks():
      client.post("/create_task",json={"mail":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
      response=client.get("show_tasks/test@gmail.com")
      task=response.json()
-     assert any(tasks["name"] for tasks in task)=="test_task2"
+     assert any(tasks["name"]=="test_task2" for tasks in task)
