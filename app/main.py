@@ -51,14 +51,14 @@ def create_tast(task:Create_Task):
         user_ref=db.collection("users").document(task.mail).collection("tasks").document()
         user_ref.set({"name":task.task_name,"description":task.description,"status":"pending"})
         return {"message":"Task added successfully"}
-    except err as Exception:
+    except Exception as err:
         return err
         
 
 @app.get("/show_tasks/{mail_id}")
 def show_task(mail_id:str):
     try:
-        user_ref=db.collection("users").document(mail_id).collection("tasks").document()
+        user_ref=db.collection("users").document(mail_id).collection("tasks")
         tasks=user_ref.stream()
         task=[]
         for i in tasks:
@@ -66,7 +66,7 @@ def show_task(mail_id:str):
         if not task:
             raise HTTPException(detail="no tasks found")
         return task
-    except err as Exception:
+    except Exception as err:
         return err
 
 
