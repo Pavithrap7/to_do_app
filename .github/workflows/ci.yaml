@@ -30,3 +30,10 @@ jobs:
       - name: Run Testcases
         run: |
           pytest -v --capture=no test/test_main.py
+
+      - name: Deploy to Render
+        if: success()    # Only deploy if tests pass
+        run: |
+          curl -X POST "https://api.render.com/deploy/srv-d6e5evfpm1nc73a81ve0" \
+          -H "Accept: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
