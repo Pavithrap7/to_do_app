@@ -5,7 +5,7 @@ import json
 
 def get_db():
     if not firebase_admin._apps:
-        cred_json = os.getenv("FIREBASE_CREDENTIALS")
+        cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
         if not cred_json:
             raise Exception("FIREBASE_CREDENTIALS not set")
         cred = credentials.Certificate(json.loads(cred_json))
