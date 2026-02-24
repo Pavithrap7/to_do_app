@@ -4,11 +4,9 @@ from firebase_admin import credentials, firestore
 
 def get_db():
     if not firebase_admin._apps:
-        cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if not cred_path:
-            return None
-        cred = credentials.Certificate(cred_path)
+        cred_json = os.getenv("FIREBASE_CREDENTIALS")
+        if not cred_json:
+            raise Exception("FIREBASE_CREDENTIALS not set")
+        cred = credentials.Certificate(json.loads(cred_json))
         firebase_admin.initialize_app(cred)
-
     return firestore.client()
-
