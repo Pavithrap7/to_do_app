@@ -25,11 +25,6 @@ jobs:
         run: |
           echo "FIREBASE_CREDENTIALS=${{ secrets.FIREBASE_CREDENTIALS }}" >> $GITHUB_ENV
 
-      - name: Setup Firebase Key
-        run: |
-           echo '${{ secrets.FIREBASE_KRY }}' > app/firebase_key.json
-           echo "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/app/firebase_key.json" >> $GITHUB_ENV
-
       - name: Run Testcases
         run: |
           pytest -v --capture=no test/test_main.py
