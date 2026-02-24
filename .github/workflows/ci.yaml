@@ -23,7 +23,8 @@ jobs:
           fi
       - name: Setup Firebase Env
         run: |
-          echo "FIREBASE_CREDENTIALS_JSON=$(echo ${{ secrets.FIREBASE_CREDENTIALS }} | base64 --decode)" >> $GITHUB_ENV
+          printf '%s' "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > app/firebase_key.json
+          echo "FIREBASE_CREDENTIALS_JSON=$(cat app/firebase_key.json)" >> $GITHUB_ENV
 
       - name: Run Testcases
         run: |
