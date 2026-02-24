@@ -1,6 +1,7 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
 
 def get_db():
     if not firebase_admin._apps:
