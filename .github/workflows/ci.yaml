@@ -22,8 +22,7 @@ jobs:
             pip install -r requirements.txt
           fi
       - name: Setup Firebase Env
-        run: |
-          printf '%s' "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > app/firebase_key.json
+        run: echo "FIREBASE_KEY_BASE64=${{ secrets.FIREBASE_CREDENTIALS }}" >> $GITHUB_ENV
 
       - name: Run Testcases
         run: |
