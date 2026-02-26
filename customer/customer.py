@@ -13,7 +13,7 @@ def task(mail):
             payload={"mail":mail,"task_name":title,"description":description}
             response=requests.post(f"{base_url}/create_task",json=payload)
             if response.status_code==200:
-                print("Task added successfully")
+                print("Task added successfully    ")
             else:
                 print("================ERROR==============",response.json())
         if ans==2:
