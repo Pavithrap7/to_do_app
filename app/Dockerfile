@@ -1,12 +1,13 @@
 FROM jenkins/jenkins:lts
 
-# Switch to root to install packages
 USER root
 
-# Install Docker CLI + Python3 + pip + bash
+# Install Docker CLI
 RUN apt-get update && \
-    apt-get install -y docker.io python3 python3-pip bash && \
+    apt-get install -y docker.io && \
     rm -rf /var/lib/apt/lists/*
 
-# Switch back to jenkins user
+# Enable Docker daemon inside container
+RUN dockerd &
+
 USER jenkins
