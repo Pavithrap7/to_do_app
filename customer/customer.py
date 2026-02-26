@@ -38,7 +38,7 @@ def register():
     payload={"name":name,"mail_id":mail_id,"password":repeat_password}
     response=requests.post(f"{base_url}/register",json=payload)
     if response.status_code==201:
-        print("user registered successfully")
+        print("user registered successfully   ")
     else:
         print(f"=============ERROR==============\n",response.json())
 
