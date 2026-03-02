@@ -56,3 +56,45 @@ def test_show_tasks():
      response=client.get("/show_tasks/test@gmail.com")
      task=response.json()
      assert any(tasks["name"]=="test_task2" for tasks in task)
+
+def test_del_tasks():
+    mail = "test@gmail.com"
+    
+    # Create some tasks first
+    client.post("/create_task", json={"mail": mail, "task_name": "task_a", "description": "desc a"})
+    client.post("/create_task", json={"mail": mail, "task_name": "task_b", "description": "desc b"})
+    
+    # Delete a single task (task_a)
+    response = client.delete(f"/delete_task?mail={mail}&task_name=task_a")
+    assert response.status_code == 200
+    assert response.json()["message"] == "Task 'task_a' deleted for test@gmail.com"
+
+    # Verify only task_b remains
+    tasks = client.get(f"/show_tasks/{mail}").json()
+    task_names = [t["name"] for t in tasks]
+    assert "task_a" not in task_names
+    assert "task_b" in task_names
+
+    # Delete all remaining tasks for the user
+    response = client.delete(f"/delete_task?mail={mail}")
+    assert response.status_code == 200
+    assert response.json()["message"] == f"All tasks deleted for {mail}"
+
+    # Verify tasks are empty
+    tasks = client.get(f"/show_tasks/{mail}").json()
+    assert tasks == []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
