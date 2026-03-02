@@ -34,11 +34,5 @@ pipeline {
             }
         }
 
-        stage('Build / Test') {
-            steps {
-                echo 'Repo cloned, Python installed, dependencies installed!'
-                # Add your build/test commands here
-            }
-        }
     }
 }
