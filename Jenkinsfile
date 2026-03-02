@@ -35,6 +35,14 @@ pipeline {
                 '''
             }
         }
+	stage('Run Test Cases') {
+	    steps {
+		echo 'Running pytest on test/ folder...'
+		sh '''
+		    venv/bin/pytest test/ --maxfail=1 --disable-warnings -q
+		'''
+	    }
+	}
 
     }
 }
