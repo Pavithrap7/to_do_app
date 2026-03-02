@@ -69,35 +69,29 @@ def show_task(mail_id:str):
     except Exception as err:
         return err
 
-
-
 @app.delete("/delete_task")
 def delete_task(mail: str, task_name: str = None):
-    """
-    Delete tasks:
-    - If task_name provided → delete that task only
-    - Else → delete all tasks of that user
-    """
-    global tasks_db
+    tasks_ref = db.collection("users").document(mail).collection("tasks")
+    tasks = list(tasks_ref.stream())
 
-    if mail not in tasks_db:
-        raise HTTPException(status_code=404, detail="User not found")
+    if not tasks:
+        raise HTTPException(status_code=404, detail="User not found or no tasks")
 
     if task_name:
-        # delete specific task
-        original_count = len(tasks_db[mail])
-        tasks_db[mail] = [t for t in tasks_db[mail] if t["name"] != task_name]
-        deleted_count = original_count - len(tasks_db[mail])
-        if deleted_count == 0:
+        deleted = False
+        for t in tasks:
+            if t.to_dict()["name"] == task_name:
+                t.reference.delete()
+                deleted = True
+                break
+        if not deleted:
             raise HTTPException(status_code=404, detail="Task not found")
         return {"message": f"Task '{task_name}' deleted for {mail}"}
     else:
-        # delete all tasks of that user
-        tasks_db[mail].clear()
+        # delete all tasks
+        for t in tasks:
+            t.reference.delete()
         return {"message": f"All tasks deleted for {mail}"}
-
-
-
 
 
 
