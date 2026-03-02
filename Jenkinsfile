@@ -43,7 +43,7 @@ pipeline {
 	    steps {
 		echo 'Running pytest on test/ folder...'
 		sh '''
-		    venv/bin/pytest test/ --maxfail=1 --disable-warnings --junitxml=report.xml
+		    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
 		'''
 		junit 'report.xml'
 	    }
