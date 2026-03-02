@@ -75,7 +75,7 @@ def delete_task(mail: str, task_name: str = None):
     tasks = list(tasks_ref.stream())
 
     if not tasks:
-        raise HTTPException(status_code=404, detail="User not found or no tasks")
+        raise HTTPException(status_code=404, detail="No tasks found for user")
 
     if task_name:
         deleted = False
@@ -83,16 +83,13 @@ def delete_task(mail: str, task_name: str = None):
             if t.to_dict()["name"] == task_name:
                 t.reference.delete()
                 deleted = True
-                break
         if not deleted:
             raise HTTPException(status_code=404, detail="Task not found")
         return {"message": f"Task '{task_name}' deleted for {mail}"}
     else:
-        # delete all tasks
         for t in tasks:
             t.reference.delete()
         return {"message": f"All tasks deleted for {mail}"}
-
 
 
 
