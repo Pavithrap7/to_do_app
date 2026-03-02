@@ -58,19 +58,31 @@ def test_create_task_with_description():
     response=client.post("/create_task",json={"mail":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
     assert "message" in response.json()
 
+
 def test_show_tasks():
-     client.post("/create_task",json={"mail":"test@gmail.com","task_name":"test_task2","description":"this is about creating tasks"})
-     response=client.get("/show_tasks/test@gmail.com")
-     task=response.json()
-     assert any(tasks["name"]=="test_task2" for tasks in task)
+    # Create a task first
+    client.post("/create_task", json={
+        "mail": "test@gmail.com",
+        "task_name": "test_task2",
+        "description": "this is about creating tasks"
+    })
+
+    # Fetch tasks for the user
+    response = client.get("/show_tasks/test@gmail.com")
+    tasks = response.json()
+
+    # Assert that the response is a list and contains the task we just created
+    assert isinstance(tasks, list)
+    assert any(task["name"] == "test_task2" for task in tasks)
+
 
 def test_del_tasks():
     mail = "test@gmail.com"
-    
+
     # Create some tasks first
     client.post("/create_task", json={"mail": mail, "task_name": "task_a", "description": "desc a"})
     client.post("/create_task", json={"mail": mail, "task_name": "task_b", "description": "desc b"})
-    
+
     # Delete a single task (task_a)
     response = client.delete(f"/delete_task?mail={mail}&task_name=task_a")
     assert response.status_code == 200
@@ -78,6 +90,7 @@ def test_del_tasks():
 
     # Verify only task_b remains
     tasks = client.get(f"/show_tasks/{mail}").json()
+    assert isinstance(tasks, list)
     task_names = [t["name"] for t in tasks]
     assert "task_a" not in task_names
     assert "task_b" in task_names
@@ -89,19 +102,5 @@ def test_del_tasks():
 
     # Verify tasks are empty
     tasks = client.get(f"/show_tasks/{mail}").json()
+    assert isinstance(tasks, list)
     assert tasks == []
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

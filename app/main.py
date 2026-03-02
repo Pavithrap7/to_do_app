@@ -56,18 +56,17 @@ def create_tast(task:Create_Task):
         
 
 @app.get("/show_tasks/{mail_id}")
-def show_task(mail_id:str):
+def show_task(mail_id: str):
+    """
+    Returns all tasks for a user. If no tasks exist, returns an empty list.
+    """
     try:
-        user_ref=db.collection("users").document(mail_id).collection("tasks")
-        tasks=user_ref.stream()
-        task=[]
-        for i in tasks:
-            task.append(i.to_dict())
-        if not task:
-            raise HTTPException(detail="no tasks found")
-        return task
+        tasks_ref = db.collection("users").document(mail_id).collection("tasks")
+        tasks = [t.to_dict() for t in tasks_ref.stream()]
+        return tasks  # will be [] if no tasks
     except Exception as err:
-        return err
+        return {"error": str(err)}
+
 
 @app.delete("/delete_task")
 def delete_task(mail: str, task_name: str = None):
