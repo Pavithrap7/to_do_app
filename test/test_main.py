@@ -1,8 +1,31 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+import logging
 
-client=TestClient(app)
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Logging wrapper for TestClient
+class LoggingClient:
+    def __init__(self, client):
+        self.client = client
+
+    def post(self, url, **kwargs):
+        logging.debug(f"POST {url} with payload: {kwargs.get('json')}")
+        response = self.client.post(url, **kwargs)
+        logging.debug(f"Response {response.status_code}: {response.json()}")
+        return response
+
+    def get(self, url, **kwargs):
+        logging.debug(f"GET {url} with params: {kwargs.get('params')}")
+        response = self.client.get(url, **kwargs)
+        logging.debug(f"Response {response.status_code}: {response.json()}")
+        return response
+
+# Use LoggingClient for all tests
+client = LoggingClient(TestClient(app))
+#client=TestClient(app)
 
 #def test_register():
 #    response=client.post("/register",json={"name":"test_user","mail_id":"test@gmail.com","password":"testpass"})
