@@ -4,4 +4,5 @@ pydantic[email]
 firebase-admin
 pytest
 pytest-asyncio
+pytest-logging
 httpx
