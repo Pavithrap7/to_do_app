@@ -1,13 +1,21 @@
 pipeline {
-    agent any
-
+    agent {
+        docker { image 'python:3.12' }
+    }
     stages {
         stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Install Dependencies') {
             steps {
-                // Pulls the code from my repo
-                git url: 'https://github.com/Pavithrap7/to_do_app.git', 
-                    branch: 'master'
+                sh 'pip install --upgrade pip'
+                sh 'pip install -r requirements.txt'
             }
         }
-}
+
+        stage('Test') {
+            steps { sh 'pytest' }
+        }
+    }
 }
