@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Checkout') {
             steps {
-                git branch: 'main', 
+                git branch: 'master', 
                     url: 'https://github.com/Pavithrap7/to_do_app.git', 
                     #credentialsId: 'your-cred-id'
             }
