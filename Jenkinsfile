@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    environment {
+        // Inject Firebase key from Jenkins credentials
+        FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
+    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
