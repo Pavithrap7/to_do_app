@@ -9,13 +9,5 @@ pipeline {
                     branch: 'master'
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                // Adjust based on your app (e.g., npm install for JS or pip for Python)
-                echo 'Installing dependencies...'
-                sh 'npm install' 
-            }
-        }
 }
 }
