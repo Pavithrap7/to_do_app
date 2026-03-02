@@ -22,10 +22,22 @@ pipeline {
             }
         }
 
+        stage('Install Python & Dependencies') {
+            steps {
+                echo 'Installing Python and pip...'
+                sh '''
+                    sudo apt-get update
+                    sudo apt-get install -y python3 python3-pip
+                    python3 -m pip install --upgrade pip
+                    python3 -m pip install -r requirements.txt
+                '''
+            }
+        }
+
         stage('Build / Test') {
             steps {
-                echo 'Repo cloned successfully on master branch!'
-                // Add your build/test commands here
+                echo 'Repo cloned, Python installed, dependencies installed!'
+                # Add your build/test commands here
             }
         }
     }
