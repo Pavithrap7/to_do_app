@@ -26,6 +26,8 @@ pipeline {
             steps {
                 echo 'Installing Python and pip...'
                 sh '''
+		    apt-get update
+                    apt-get install -y python3-venv python3-pip
                     python3 -m venv venv
 		    source bin/venv/activate
                     pip install --upgrade pip
