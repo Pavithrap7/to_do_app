@@ -71,11 +71,17 @@ def show_task(mail_id:str):
 
 @app.delete("/delete_task")
 def delete_task(mail: str, task_name: str = None):
+    """
+    Delete tasks for a user.
+    - If task_name is provided: delete that specific task.
+    - If task_name is None: delete all tasks.
+    Returns a message even if no tasks exist.
+    """
     tasks_ref = db.collection("users").document(mail).collection("tasks")
     tasks = list(tasks_ref.stream())
 
     if not tasks:
-        raise HTTPException(status_code=404, detail="No tasks found for user")
+        return {"message": f"No tasks found for {mail}"}
 
     if task_name:
         deleted = False
@@ -83,13 +89,13 @@ def delete_task(mail: str, task_name: str = None):
             if t.to_dict()["name"] == task_name:
                 t.reference.delete()
                 deleted = True
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return {"message": f"Task '{task_name}' deleted for {mail}"}
+        if deleted:
+            return {"message": f"Task '{task_name}' deleted for {mail}"}
+        else:
+            return {"message": f"Task '{task_name}' not found for {mail}"}
     else:
         for t in tasks:
             t.reference.delete()
         return {"message": f"All tasks deleted for {mail}"}
-
 
 
