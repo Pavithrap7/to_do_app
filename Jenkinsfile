@@ -29,7 +29,7 @@ pipeline {
 		    apt-get update
                     apt-get install -y python3-venv python3-pip
                     python3 -m venv venv
-		    . bin/venv/activate
+		    . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
