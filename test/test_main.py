@@ -23,6 +23,12 @@ class LoggingClient:
         logging.debug(f"Response {response.status_code}: {response.json()}")
         return response
 
+   def delete(self, url, **kwargs):
+        logging.debug(f"DELETE {url} with payload: {kwargs.get('json')}")
+        response = self.client.delete(url, **kwargs)
+        logging.debug(f"Response {response.status_code}: {response.json()}")
+        return response
+
 # Use LoggingClient for all tests
 client = LoggingClient(TestClient(app))
 #client=TestClient(app)
