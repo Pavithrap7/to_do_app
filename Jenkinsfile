@@ -72,7 +72,7 @@ pipeline {
 		    cd "$HOME/application"
 
                     if [ ! -d ".git" ]; then
-                        git clone -b matser https://github.com/Pavithrap7/to_do_app.git .
+                        git clone -b master https://github.com/Pavithrap7/to_do_app.git .
                     else
                         git pull origin master
                     fi
