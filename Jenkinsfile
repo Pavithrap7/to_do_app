@@ -50,48 +50,54 @@ pipeline {
                 '''
                 junit 'report.xml'
             }
-        }
+        
+	}
+	stage('Deploy to EC2') {
+    steps {
+        echo 'Deploying application to EC2...'
+        sshagent(['ec2_ssh_id']) {
+            sh """
+            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            set -e
 
-        stage('Deploy to EC2') {
-            steps {
-                echo 'Deploying application to EC2...'
-                sshagent(['ec2_ssh_id']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
-                    set -e
+            # Install system packages
+            sudo apt update -y
+            sudo apt install -y python3 python3-pip python3-venv git
 
-                    sudo apt update -y
-                    sudo apt install -y python3 python3-pip python3-venv git
-		    # Remove app folder only if it exists
-		    if [ -d "$HOME/application" ]; then
-			rm -rf "$HOME/application"
-		    else
-			mkdir -p "$HOME/application"
-		    fi
+            # Set working directory
+            APP_DIR="/home/ubuntu/application"
+            mkdir -p "\$APP_DIR"
+            cd "\$APP_DIR"
 
-		    cd "$HOME/application"
+            # Clone or pull repo
+            if [ ! -d ".git" ]; then
+                git clone -b master https://github.com/Pavithrap7/to_do_app.git .
+            else
+                git pull origin master
+            fi
 
-                    if [ ! -d ".git" ]; then
-                        git clone -b master https://github.com/Pavithrap7/to_do_app.git .
-                    else
-                        git pull origin master
-                    fi
+            # Setup virtual environment
+            if [ ! -d "venv" ]; then
+                python3 -m venv venv
+            fi
 
-                    if [ ! -d "venv" ]; then
-                        python3 -m venv venv
-                    fi
+            source venv/bin/activate
 
-                    source venv/bin/activate
-		    export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+            # Export Firebase key
+            export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
 
-                    pkill -f main.py || true
-                    nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+            # Install Python dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            # Start FastAPI app
+            pkill -f main.py || true
+            nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
-                    '''
-                }
-            }
+            """
         }
+    }
+}
+
     }
 }
