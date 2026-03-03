@@ -66,10 +66,7 @@ pipeline {
 		    if [ -d "$HOME/application" ]; then
 			rm -rf "$HOME/application"
 		    fi
-
-		    # Create fresh app directory
-		    mkdir -p "$HOME/app"
-		    cd "$HOME/app"
+		    cd "$HOME/application"
 
                     if [ ! -d ".git" ]; then
                         git clone https://github.com/Pavithrap7/to_do_app.git .
