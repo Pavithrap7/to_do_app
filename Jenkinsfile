@@ -72,7 +72,7 @@ pipeline {
 		    cd "$HOME/application"
 
                     if [ ! -d ".git" ]; then
-                        git clone https://github.com/Pavithrap7/to_do_app.git .
+                        git clone -b matser https://github.com/Pavithrap7/to_do_app.git .
                     else
                         git pull origin master
                     fi
@@ -83,7 +83,7 @@ pipeline {
 
                     source venv/bin/activate
                     pip install --upgrade pip
-                    pip install -r app/requirements.txt
+                    pip install -r requirements.txt
 
                     pkill -f main.py || true
                     nohup python3 main.py > app.log 2>&1 &
