@@ -50,24 +50,40 @@ pipeline {
                 junit 'report.xml'
             }
         }
+	stage('Deploy to EC2') {
+	    steps {
+		sshagent(['ubuntu']) {
+		    sh '''
+		    ssh -o StrictHostKeyChecking=no ubuntu@13.61.188.43 << 'EOF'
+		    set -e
 
-        stage('Deploy to EC2') {
-            steps {
-                echo 'Deploying application to EC2...'
-                sshagent(credentials: ['ec2_ssh_id']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
-                            mkdir -p ~/app &&
-                            cd ~/app &&
-                            git pull https://github.com/Pavithrap7/to_do_app.git master &&
-                            . venv/bin/activate || python3 -m venv venv &&
-                            pip install --upgrade pip &&
-                            pip install -r requirements.txt &&
-                            nohup python3 main.py > app.log 2>&1 &
-                        "
-                    '''
-                }
-            }
-        }
+		    # Install dependencies (runs safely even if already installed)
+		    sudo apt update -y
+		    sudo apt install -y python3 python3-pip python3-venv git
+
+		    mkdir -p ~/app
+		    cd ~/app
+
+		    if [ ! -d ".git" ]; then
+			git clone https://github.com/Pavithrap7/to_do_app.git .
+		    else
+			git pull origin master
+		    fi
+
+		    if [ ! -d "venv" ]; then
+			python3 -m venv venv
+		    fi
+
+		    source venv/bin/activate
+		    pip install --upgrade pip
+		    pip install -r requirements.txt
+
+		    nohup python3 main.py > app.log 2>&1 &
+		    EOF
+		    '''
+		}
+	    }
+	}
+
     }
 }
