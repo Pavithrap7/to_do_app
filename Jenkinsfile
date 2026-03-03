@@ -1,8 +1,9 @@
 pipeline {
     agent any
     environment {
-        // Inject Firebase key from Jenkins credentials
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
+        EC2_USER = 'ubuntu'
+        EC2_HOST = '13.61.188.43'
     }
 
     options {
@@ -30,24 +31,43 @@ pipeline {
             steps {
                 echo 'Installing Python and pip...'
                 sh '''
-		    apt-get update
+                    apt-get update
                     apt-get install -y python3-venv python3-pip
                     python3 -m venv venv
-		    . venv/bin/activate
+                    . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
         }
-	stage('Run Test Cases') {
-	    steps {
-		echo 'Running pytest on test/ folder...'
-		sh '''
-		    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml --log-cli-level=DEBUG 2>&1 | tee test.log
-		'''
-		junit 'report.xml'
-	    }
-	}
 
+        stage('Run Test Cases') {
+            steps {
+                echo 'Running pytest on test/ folder...'
+                sh '''
+                    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml --log-cli-level=DEBUG 2>&1 | tee test.log
+                '''
+                junit 'report.xml'
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                echo 'Deploying application to EC2...'
+                sshagent(credentials: ['ec2_ssh_id']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+                            mkdir -p ~/app &&
+                            cd ~/app &&
+                            git pull https://github.com/Pavithrap7/to_do_app.git master &&
+                            . venv/bin/activate || python3 -m venv venv &&
+                            pip install --upgrade pip &&
+                            pip install -r requirements.txt &&
+                            nohup python3 main.py > app.log 2>&1 &
+                        "
+                    '''
+                }
+            }
+        }
     }
 }
