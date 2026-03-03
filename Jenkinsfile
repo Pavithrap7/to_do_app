@@ -82,7 +82,7 @@ pipeline {
                     fi
 
                     source venv/bin/activate
-		    export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
+		    export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
                     pip install --upgrade pip
                     pip install -r requirements.txt
 
