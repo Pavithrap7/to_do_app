@@ -86,7 +86,7 @@ pipeline {
                     pip install -r requirements.txt
 
                     pkill -f main.py || true
-                    nohup python3 -m app.main.py --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+                    nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
                     '''
                 }
