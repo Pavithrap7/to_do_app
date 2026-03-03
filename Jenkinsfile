@@ -65,7 +65,10 @@ pipeline {
 		    # Remove app folder only if it exists
 		    if [ -d "$HOME/application" ]; then
 			rm -rf "$HOME/application"
+		    else:
+			mkdir -p "$HOME/application"
 		    fi
+
 		    cd "$HOME/application"
 
                     if [ ! -d ".git" ]; then
