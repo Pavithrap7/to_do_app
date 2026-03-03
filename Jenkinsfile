@@ -87,7 +87,7 @@ pipeline {
 
                     pkill -f main.py || true
                     nohup python3 main.py > app.log 2>&1 &
-ENDSSH
+EOF
                     '''
                 }
             }
