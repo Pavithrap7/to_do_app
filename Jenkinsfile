@@ -83,7 +83,7 @@ pipeline {
 
                     source venv/bin/activate
                     pip install --upgrade pip
-                    pip install -r requirements.txt
+                    pip install -r app/requirements.txt
 
                     pkill -f main.py || true
                     nohup python3 main.py > app.log 2>&1 &
