@@ -86,7 +86,7 @@ pipeline {
                     pip install -r requirements.txt
 
                     pkill -f main.py || true
-                    nohup python3 main.py > app.log 2>&1 &
+                    nohup python3 -m app.main.py --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
                     '''
                 }
