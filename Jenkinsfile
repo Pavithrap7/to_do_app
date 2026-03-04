@@ -54,7 +54,7 @@ pipeline {
 	}
 	stage('Deploy to EC2') {
     steps {
-        echo 'Deploying application to EC2...'
+        echo 'Deploying application to EC2.......'
         sshagent(['ec2_ssh_id']) {
             sh """
             ssh -o -tt StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
