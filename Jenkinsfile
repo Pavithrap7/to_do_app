@@ -95,9 +95,9 @@ pipeline {
                     pip install -r requirements.txt
 
                     pkill -f main.py || true
-		    echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
-		    FIREBASE_KEY_BASE64="\$(cat firebase_key.b64 | base64)" \
-                    nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+		    #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
+		    nohup env FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}' \
+                    venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
                     """
                 }
