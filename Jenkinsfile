@@ -57,7 +57,7 @@ pipeline {
         echo 'Deploying application to EC2...'
         sshagent(['ec2_ssh_id']) {
             sh """
-            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            ssh -o -tt StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
             set -e
 
             # Install system packages
