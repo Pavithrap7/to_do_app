@@ -62,7 +62,7 @@ pipeline {
 		  //  """
 //}
                 sshagent(['ec2_ssh_id']) {
-                    sh '''
+                    sh """
                     ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
                     set -e
 
@@ -100,7 +100,7 @@ pipeline {
                     pkill -f main.py || true
                     nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
-                    '''
+                    """
                 }
             }
         }
