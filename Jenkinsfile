@@ -4,6 +4,7 @@ pipeline {
     environment {
         EC2_USER = 'ubuntu'
         EC2_HOST = '13.53.131.13'
+        FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
     }
 
     options {
@@ -44,9 +45,12 @@ pipeline {
         stage('Run Test Cases') {
             steps {
                 echo 'Running pytest...'
-                sh '''
-                    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
-                '''
+                // Ensure FIREBASE_KEY_BASE64 is available for Python
+                withEnv(["FIREBASE_KEY_BASE64=${FIREBASE_KEY_BASE64}"]) {
+                    sh '''
+                        venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
+                    '''
+                }
                 junit 'report.xml'
             }
         }
@@ -55,13 +59,13 @@ pipeline {
             steps {
                 echo 'Deploying application to EC2...'
                 sshagent(['ec2_ssh_id']) {
-                    // Use withCredentials for secure secret handling
+                    // Use credentials safely on remote server
                     withCredentials([string(credentialsId: 'firebase_key_id', variable: 'FIREBASE_KEY_BASE64')]) {
                         sh """
                         ssh -tt -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
                         set -e
 
-                        # System packages (only first deploy; optional for updates)
+                        # Install system packages (if needed)
                         sudo apt update -y
                         sudo apt install -y python3 python3-pip python3-venv git
 
@@ -84,7 +88,7 @@ pipeline {
                         fi
                         source venv/bin/activate
 
-                        # Setup Firebase key securely
+                        # Firebase key
                         echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
                         chmod 600 firebase_key.json
 
@@ -92,10 +96,9 @@ pipeline {
                         venv/bin/pip install --upgrade pip
                         venv/bin/pip install -r requirements.txt
 
-                        # Restart FastAPI application
+                        # Restart FastAPI app
                         pkill -f main.py || true
                         nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
-
 EOF
                         """
                     }
