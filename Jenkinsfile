@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        EC2_USER = 'ubuntu'
-        EC2_HOST = '13.53.131.13'
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
+        EC2_USER = 'ubuntu'
+        EC2_HOST = '13.61.188.43'
     }
 
     options {
@@ -29,31 +29,25 @@ pipeline {
             }
         }
 
-        stage('Setup Python & Run Test Cases') {
+        stage('Install Python & Dependencies') {
             steps {
-                echo 'Setting up Python and running test cases...'
-                withCredentials([string(credentialsId: 'firebase_key_id', variable: 'FIREBASE_KEY_BASE64')]) {
-                    sh '''
-                        set -e
+                echo 'Setting up virtual environment...'
+                sh '''
+                    set -e
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
 
-                        # Create virtual environment
-                        if [ ! -d "venv" ]; then
-                            python3 -m venv venv
-                        fi
-                        source venv/bin/activate
-
-                        # Install dependencies
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
-
-                        # Write Firebase key to file for tests
-                        echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
-                        chmod 600 firebase_key.json
-
-                        # Run pytest
-                        pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
-                    '''
-                }
+        stage('Run Test Cases') {
+            steps {
+                echo 'Running pytest...'
+                sh '''
+                    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
+                '''
                 junit 'report.xml'
             }
         }
@@ -62,50 +56,43 @@ pipeline {
             steps {
                 echo 'Deploying application to EC2...'
                 sshagent(['ec2_ssh_id']) {
-                    sh """
-                    ssh -tt -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
                     set -e
-                    set -x
 
-                    # Install system packages
                     sudo apt update -y
                     sudo apt install -y python3 python3-pip python3-venv git
+		    # Remove app folder only if it exists
+		    if [ -d "$HOME/application" ]; then
+			rm -rf "$HOME/application"
+		    else
+			mkdir -p "$HOME/application"
+		    fi
 
-                    # Set application directory
-                    APP_DIR="/home/ubuntu/application"
-                    mkdir -p "\$APP_DIR"
-                    cd "\$APP_DIR"
+		    cd "$HOME/application"
 
-                    # Clone or update repo
                     if [ ! -d ".git" ]; then
                         git clone -b master https://github.com/Pavithrap7/to_do_app.git .
                     else
-                        git fetch origin
-                        git reset --hard origin/master
+                        git pull origin master
                     fi
 
-                    # Setup virtual environment
                     if [ ! -d "venv" ]; then
                         python3 -m venv venv
                     fi
+
                     source venv/bin/activate
+		    #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
+		    export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
 
-                    # Write Firebase key for app
-                    echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
-                    chmod 600 firebase_key.json
-
-                    # Install dependencies
-                    venv/bin/pip install --upgrade pip
-                    venv/bin/pip install -r requirements.txt
-
-                    # Restart FastAPI app
                     pkill -f main.py || true
                     nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
-                    """
+                    '''
                 }
             }
         }
-
     }
 }
