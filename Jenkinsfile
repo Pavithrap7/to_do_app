@@ -4,25 +4,66 @@ pipeline {
     environment {
         EC2_USER = 'ubuntu'
         EC2_HOST = '13.53.131.13'
-        APP_DIR = '/home/ubuntu/application'
-        FIREBASE_KEY_BASE64 = credentials('firebase_key_base64')  // Jenkins secret
-        SSH_CRED = 'ubuntu'  // Jenkins SSH credential ID for EC2
+        FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        skipDefaultCheckout(true)
     }
 
     stages {
-        stage('Build') {
+
+        stage('Clean Workspace') {
             steps {
-                echo 'Building application...'
-                // You can add build steps if needed
+                echo 'Deleting old workspace...'
+                deleteDir()
+            }
+        }
+
+        stage('Checkout Master') {
+            steps {
+                echo 'Cloning master branch...'
+                git branch: 'master',
+                    url: 'https://github.com/Pavithrap7/to_do_app.git'
+            }
+        }
+
+        stage('Setup Python & Run Test Cases') {
+            steps {
+                echo 'Setting up Python and running test cases...'
+                withCredentials([string(credentialsId: 'firebase_key_id', variable: 'FIREBASE_KEY_BASE64')]) {
+                    sh '''
+                        set -e
+
+                        # Create virtual environment
+                        if [ ! -d "venv" ]; then
+                            python3 -m venv venv
+                        fi
+                        source venv/bin/activate
+
+                        # Install dependencies
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+
+                        # Write Firebase key to file for tests
+                        echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
+                        chmod 600 firebase_key.json
+
+                        # Run pytest
+                        pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
+                    '''
+                }
+                junit 'report.xml'
             }
         }
 
         stage('Deploy to EC2') {
             steps {
                 echo 'Deploying application to EC2...'
-                sshagent([SSH_CRED]) {
+                sshagent(['ec2_ssh_id']) {
                     sh """
-                    ssh -tt -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+                    ssh -tt -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
                     set -e
                     set -x
 
@@ -30,16 +71,15 @@ pipeline {
                     sudo apt update -y
                     sudo apt install -y python3 python3-pip python3-venv git
 
-                    # Create application folder
-                    mkdir -p "${APP_DIR}"
-                    cd "${APP_DIR}"
+                    # Set application directory
+                    APP_DIR="/home/ubuntu/application"
+                    mkdir -p "\$APP_DIR"
+                    cd "\$APP_DIR"
 
                     # Clone or update repo
                     if [ ! -d ".git" ]; then
-                        echo "Cloning repository..."
                         git clone -b master https://github.com/Pavithrap7/to_do_app.git .
                     else
-                        echo "Updating repository..."
                         git fetch origin
                         git reset --hard origin/master
                     fi
@@ -50,17 +90,15 @@ pipeline {
                     fi
                     source venv/bin/activate
 
-                    # Write Firebase key safely
-                    echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.json
+                    # Write Firebase key for app
+                    echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
                     chmod 600 firebase_key.json
 
-                    # Install Python dependencies
+                    # Install dependencies
                     venv/bin/pip install --upgrade pip
-                    if [ -f "requirements.txt" ]; then
-                        venv/bin/pip install -r requirements.txt
-                    fi
+                    venv/bin/pip install -r requirements.txt
 
-                    # Restart FastAPI app (example)
+                    # Restart FastAPI app
                     pkill -f main.py || true
                     nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
@@ -68,14 +106,6 @@ EOF
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Deployment succeeded!'
-        }
-        failure {
-            echo 'Deployment failed!'
-        }
     }
 }
