@@ -23,7 +23,7 @@ pipeline {
 
         stage('Checkout Master') {
             steps {
-                echo 'Cloning master branch...'
+                echo 'Cloning master branch locally...'
                 git branch: 'master',
                     url: 'https://github.com/Pavithrap7/to_do_app.git'
             }
@@ -45,7 +45,6 @@ pipeline {
         stage('Run Test Cases') {
             steps {
                 echo 'Running pytest...'
-                // Ensure FIREBASE_KEY_BASE64 is available for Python
                 withEnv(["FIREBASE_KEY_BASE64=${FIREBASE_KEY_BASE64}"]) {
                     sh '''
                         venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
@@ -59,13 +58,13 @@ pipeline {
             steps {
                 echo 'Deploying application to EC2...'
                 sshagent(['ec2_ssh_id']) {
-                    // Use credentials safely on remote server
                     withCredentials([string(credentialsId: 'firebase_key_id', variable: 'FIREBASE_KEY_BASE64')]) {
                         sh """
                         ssh -tt -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
                         set -e
+                        set -x  # Show commands for debugging
 
-                        # Install system packages (if needed)
+                        # Install system packages
                         sudo apt update -y
                         sudo apt install -y python3 python3-pip python3-venv git
 
@@ -74,13 +73,21 @@ pipeline {
                         mkdir -p "\$APP_DIR"
                         cd "\$APP_DIR"
 
+                        echo "Current directory: \$(pwd)"
+                        ls -la
+
                         # Clone or update repo
                         if [ ! -d ".git" ]; then
+                            echo "Cloning repository..."
                             git clone -b master https://github.com/Pavithrap7/to_do_app.git .
                         else
+                            echo "Updating repository..."
                             git fetch origin
                             git reset --hard origin/master
                         fi
+
+                        echo "Repository contents after clone/update:"
+                        ls -la
 
                         # Setup virtual environment
                         if [ ! -d "venv" ]; then
@@ -99,11 +106,14 @@ pipeline {
                         # Restart FastAPI app
                         pkill -f main.py || true
                         nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+
+                        echo "Deployment finished successfully."
 EOF
                         """
                     }
                 }
             }
         }
+
     }
 }
