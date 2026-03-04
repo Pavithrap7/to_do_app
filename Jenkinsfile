@@ -84,7 +84,9 @@ pipeline {
             source venv/bin/activate
 
             # Export Firebase key
-            export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
+	    echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.json
+            chmod 600 firebase_key.json
+            #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
 
             # Install Python dependencies
             pip install --upgrade pip
