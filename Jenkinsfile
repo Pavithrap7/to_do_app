@@ -69,13 +69,10 @@ pipeline {
                     sudo apt update -y
                     sudo apt install -y python3 python3-pip python3-venv git
 		    # Remove app folder only if it exists
-		    if [ -d "$HOME/application" ]; then
-			rm -rf "$HOME/application"
-		    else
-			mkdir -p "$HOME/application"
-		    fi
+		    rm -rf "/home/ubuntu/application"
+		    mkdir -p "/home/ubuntu/application"
 
-		    cd "$HOME/application"
+		    cd "/home/ubuntu/application"
 
                     if [ ! -d ".git" ]; then
                         git clone -b master https://github.com/Pavithrap7/to_do_app.git .
