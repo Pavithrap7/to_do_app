@@ -63,7 +63,7 @@ pipeline {
 //}
                 sshagent(['ec2_ssh_id']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
+                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
                     set -e
 
                     sudo apt update -y
@@ -91,7 +91,9 @@ pipeline {
 		    #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
 		    #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
 		    #export FIREBASE_KEY_BASE64=\$(cat ~/application/firebase_key.b64)
-		    echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.b64
+		    #echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.b64
+		    echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
+            	    export FIREBASE_KEY_BASE64=\$(cat firebase_key.b64)
                     pip install --upgrade pip
                     pip install -r requirements.txt
 
