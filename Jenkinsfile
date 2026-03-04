@@ -55,6 +55,12 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 echo 'Deploying application to EC2...'
+		
+		withCredentials([file(credentialsId: 'firebase_key_id_file', variable: 'FIREBASE_KEY_PATH')]) {
+		    sh """
+			scp -o StrictHostKeyChecking=no $FIREBASE_KEY_PATH ${EC2_USER}@${EC2_HOST}:~/application/firebase_key.b64
+		    """
+}
                 sshagent(['ec2_ssh_id']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
@@ -83,7 +89,8 @@ pipeline {
 
                     source venv/bin/activate
 		    #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
-		    export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
+		    #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
+		    export FIREBASE_KEY_BASE64=\$(cat ~/application/firebase_key.b64)
                     pip install --upgrade pip
                     pip install -r requirements.txt
 
