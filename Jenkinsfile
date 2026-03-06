@@ -4,7 +4,7 @@ pipeline {
     environment {
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
         EC2_USER = 'ubuntu'
-        EC2_HOST = '13.53.131.13'
+        EC2_HOST = '16.171.20.34'
     }
 
     options {
@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Running pytest...'
                 sh '''
-                    venv/bin/pytest test/ -v --maxfail=1 --disable-warnings --junitxml=report.xml
+                    venv/bin/pytest test/test_main.py -v --maxfail=1 --disable-warnings --junitxml=report.xml
                 '''
                 junit 'report.xml'
             }
@@ -55,53 +55,62 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 echo 'Deploying application to EC2...'
-		
-		//withCredentials([file(credentialsId: 'firebase_key_id_file', variable: 'FIREBASE_KEY_PATH')]) {
-		  //  sh """
-		//	scp -o StrictHostKeyChecking=no $FIREBASE_KEY_PATH ${EC2_USER}@${EC2_HOST}:~/application/firebase_key.b64
-		  //  """
-//}
+
+                //withCredentials([file(credentialsId: 'firebase_key_id_file', variable: 'FIREBASE_KEY_PATH')]) {
+                //    sh """
+                //        scp -o StrictHostKeyChecking=no $FIREBASE_KEY_PATH ${EC2_USER}@${EC2_HOST}:~/application/firebase_key.b64
+                //    """
+                //}
+
                 sshagent(['ec2_ssh_id']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
-                    set -e
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+                        set -e
 
-                    sudo apt update -y
-                    sudo apt install -y python3 python3-pip python3-venv git
-		    # Remove app folder only if it exists
-		    rm -rf "/home/ubuntu/application"
-		    mkdir -p "/home/ubuntu/application"
+                        sudo apt update -y
+                        sudo apt install -y python3 python3-pip python3-venv git
+                        # Remove app folder only if it exists
+                        rm -rf "/home/ubuntu/application"
+                        mkdir -p "/home/ubuntu/application"
 
-		    cd "/home/ubuntu/application"
+                        cd "/home/ubuntu/application"
 
-                    if [ ! -d ".git" ]; then
-                        git clone -b master https://github.com/Pavithrap7/to_do_app.git .
-                    else
-                        git pull origin master
-                    fi
+                        if [ ! -d ".git" ]; then
+                            git clone -b master https://github.com/Pavithrap7/to_do_app.git .
+                        else
+                            git pull origin master
+                        fi
 
-                    if [ ! -d "venv" ]; then
-                        python3 -m venv venv
-                    fi
+                        if [ ! -d "venv" ]; then
+                            python3 -m venv venv
+                        fi
 
-                    source venv/bin/activate
-		    #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
-		    #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
-		    #export FIREBASE_KEY_BASE64=\$(cat ~/application/firebase_key.b64)
-		    #echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.b64
-		    #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
-            	    #export FIREBASE_KEY_BASE64=\$(cat firebase_key.b64)
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                        source venv/bin/activate
+                        #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
+                        #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
+                        #export FIREBASE_KEY_BASE64=\$(cat ~/application/firebase_key.b64)
+                        #echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.b64
+                        #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
+                        #export FIREBASE_KEY_BASE64=\$(cat firebase_key.b64)
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
 
-                    pkill -f main.py || true
-		    #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
-		    nohup env FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}' \
-                    venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+                        pkill -f main.py || true
+                        #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
+                        nohup env FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}' \
+                        venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 EOF
                     """
                 }
             }
         }
+
+        stage('Smoke Tests') {
+            steps {
+                sh 'venv/bin/pytest test/test_smoke.py --base-url=http://$EC2_HOST:8000 -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml'
+                junit 'smoke_report.xml'
+            }
+        }
+
     }
 }
