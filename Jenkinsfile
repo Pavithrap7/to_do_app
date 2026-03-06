@@ -109,7 +109,7 @@ EOF
             steps {
                 sh '''set -e 
 		    . venv/bin/activate 
-		    pyest test/test_smoke.py --base-url=http://$EC2_HOST:8000 -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml'''
+		    pytest test/test_smoke.py --base-url=http://$EC2_HOST:8000 -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml'''
                 junit 'smoke_report.xml'
             }
         }
