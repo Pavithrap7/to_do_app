@@ -23,7 +23,7 @@ pipeline {
 
         stage('Checkout Master') {
             steps {
-                echo 'Cloning master branch...'
+                echo 'Cloning master branch.....'
                 git branch: 'master',
                     url: 'https://github.com/Pavithrap7/to_do_app.git'
             }
