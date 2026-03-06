@@ -107,7 +107,9 @@ EOF
 
         stage('Smoke Tests') {
             steps {
-                sh '''set -e 
+                sh '''
+		    cat test/test_smoke.py
+		    set -e 
 		    . venv/bin/activate 
 		    pytest test/test_smoke.py --base-url=http://$EC2_HOST:8000 -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml'''
                 junit 'smoke_report.xml'
