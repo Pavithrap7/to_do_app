@@ -4,18 +4,6 @@ import random
 import string
 
 # -------------------
-# 1. Get base URL from Jenkins
-# -------------------
-def pytest_addoption(parser):
-    parser.addoption(
-        "--base-url", action="store", required=True, help="Base URL for smoke tests"
-    )
-
-@pytest.fixture
-def base_url(request):
-    return request.config.getoption("--base-url")
-
-# -------------------
 # 2. Helper to generate random email for testing
 # -------------------
 def random_email():
