@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        terraform 'terraform'
+    }
 
     environment {
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
@@ -42,7 +45,7 @@ pipeline {
 	    steps {
 		script {
 		    env.EC2_HOST = sh(
-			script: "cd ~/terraform_project && terraform output -raw instance_public_ip",
+			script: "cd terraform_project && terraform output -raw instance_public_ip",
 			returnStdout: true
 		    ).trim()
 		}
