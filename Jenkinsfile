@@ -4,7 +4,7 @@ pipeline {
     environment {
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
         EC2_USER = 'ubuntu'
-        EC2_HOST = '16.171.20.34'
+        //EC2_HOST = '16.171.20.34'
     }
 
     options {
@@ -28,6 +28,27 @@ pipeline {
                     url: 'https://github.com/Pavithrap7/to_do_app.git'
             }
         }
+	stage('Terraform Apply') {
+	    steps {
+		echo 'Creating infrastructure with Terraform...'
+		sh '''
+		    cd ~/terraform_project
+		    terraform init
+		    terraform apply -auto-approve
+		'''
+	    }
+	}
+	stage('Get EC2 IP') {
+	    steps {
+		script {
+		    env.EC2_HOST = sh(
+			script: "cd ~/terraform_project && terraform output -raw instance_public_ip",
+			returnStdout: true
+		    ).trim()
+		}
+		echo "EC2 IP is ${EC2_HOST}"
+	    }
+	}
 
         stage('Install Python & Dependencies') {
             steps {
