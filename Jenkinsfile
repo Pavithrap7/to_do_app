@@ -46,6 +46,7 @@ pipeline {
 			export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
 			cd terraform_project
+			terraform import aws_security_group.todo_sg sg-0758948adf5330ed1 || true
 			terraform init
 			terraform apply -auto-approve
 		    '''
