@@ -55,12 +55,26 @@ pipeline {
 	}
 	stage('Get EC2 IP') {
 	    steps {
-		script {
-		    env.EC2_HOST = sh(
-			script: "cd terraform_project && terraform output -raw instance_public_ip",
-			returnStdout: true
-		    ).trim()
+
+		withCredentials([usernamePassword(
+		    credentialsId: 'jenkin_cred',
+		    usernameVariable: 'AWS_ACCESS_KEY_ID',
+		    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+		)]) {
+
+		    script {
+			env.EC2_HOST = sh(
+			    script: '''
+				export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+				export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+				cd terraform_project
+				terraform output -raw instance_public_ip
+			    ''',
+			    returnStdout: true
+			).trim()
+		    }
 		}
+
 		echo "EC2 IP is ${EC2_HOST}"
 	    }
 	}
