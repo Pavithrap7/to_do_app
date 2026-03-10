@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "todo-terraform-state"
+    bucket = "todo-terraform-state-pavithra"
     key    = "todo/terraform.tfstate"
     region = "eu-north-1"
   }
