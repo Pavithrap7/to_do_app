@@ -31,6 +31,31 @@ pipeline {
                     url: 'https://github.com/Pavithrap7/to_do_app.git'
             }
         }
+
+
+        stage('Install Python & Dependencies') {
+            steps {
+                echo 'Setting up virtual environment...'
+                sh '''
+                    set -e
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Test Cases') {
+            steps {
+                echo 'Running pytest...'
+                sh '''
+                    venv/bin/pytest test/test_main.py -v --maxfail=1 --disable-warnings --junitxml=report.xml
+                '''
+                junit 'report.xml'
+            }
+        }
+
 	stage('Terraform Apply') {
 	    steps {
 		echo 'Creating infrastructure with Terraform...'
@@ -78,29 +103,9 @@ pipeline {
 		echo "EC2 IP is ${EC2_HOST}"
 	    }
 	}
+}
 
-        stage('Install Python & Dependencies') {
-            steps {
-                echo 'Setting up virtual environment...'
-                sh '''
-                    set -e
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
-            }
-        }
 
-        stage('Run Test Cases') {
-            steps {
-                echo 'Running pytest...'
-                sh '''
-                    venv/bin/pytest test/test_main.py -v --maxfail=1 --disable-warnings --junitxml=report.xml
-                '''
-                junit 'report.xml'
-            }
-        }
 
         stage('Deploy to EC2') {
             steps {
