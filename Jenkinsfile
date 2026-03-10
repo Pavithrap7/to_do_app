@@ -103,7 +103,7 @@ pipeline {
 		echo "EC2 IP is ${EC2_HOST}"
 	    }
 	}
-}
+
 
 
 
