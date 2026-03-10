@@ -36,7 +36,7 @@ pipeline {
 		echo 'Creating infrastructure with Terraform...'
 
 		withCredentials([usernamePassword(
-		    credentialsId: 'aws_creds',
+		    credentialsId: 'jenkin_cred',
 		    usernameVariable: 'AWS_ACCESS_KEY_ID',
 		    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
 		)]) {
