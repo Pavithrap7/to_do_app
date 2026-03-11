@@ -74,6 +74,7 @@ pipeline {
 			terraform init
 			terraform import aws_security_group.todo_sg sg-0758948adf5330ed1 || true
 			terraform apply -auto-approve
+			terraform output
 		    '''
 		}
 	    }
