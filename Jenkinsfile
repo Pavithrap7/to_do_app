@@ -38,6 +38,9 @@ pipeline {
 
         // -------------------------------
         stage('Install Python & Dependencies') {
+	    agent {
+		docker { image 'python:3.13-slim' }
+	    }
             steps {
                 echo 'Setting up virtual environment...'
                 sh '''
