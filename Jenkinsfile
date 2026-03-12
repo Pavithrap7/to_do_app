@@ -38,9 +38,9 @@ pipeline {
 
         // -------------------------------
         stage('Install Python & Dependencies') {
-	    agent {
-		docker { image 'python:3.13-slim' }
-	    }
+	    //agent {
+	//	docker { image 'python:3.13-slim' }
+	  //  }
             steps {
                 echo 'Setting up virtual environment...'
                 sh '''
@@ -65,21 +65,21 @@ pipeline {
         }
 
         // -------------------------------
-        stage('Build Docker Image') {
-	    agent {
-		docker { image 'docker:24.0.5-cli' }
-	    }
-            steps {
-                echo 'Building Docker image...'
-                sh '''
-                    docker build -t todo-app:${BUILD_NUMBER} .
-                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-                    docker tag todo-app:${BUILD_NUMBER} $ECR_REPO:${BUILD_NUMBER}
-                    docker push $ECR_REPO:${BUILD_NUMBER}
-                '''
-            }
-        }
-
+//         stage('Build Docker Image') {
+// 	    agent {
+// 		docker { image 'docker:24.0.5-cli' }
+// 	    }
+//             steps {
+//                 echo 'Building Docker image...'
+//                 sh '''
+//                     docker build -t todo-app:${BUILD_NUMBER} .
+//                     aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+//                     docker tag todo-app:${BUILD_NUMBER} $ECR_REPO:${BUILD_NUMBER}
+//                     docker push $ECR_REPO:${BUILD_NUMBER}
+//                 '''
+//             }
+//         }
+// 
         // -------------------------------
         stage('Terraform Apply') {
             steps {
