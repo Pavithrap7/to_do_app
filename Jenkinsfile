@@ -114,28 +114,29 @@ pipeline {
             }
         }
 
-        stage('Deploy using Ansible') {
-            steps {
-                echo 'Deploying application via Ansible...'
-                sshagent(['ec2_ssh_id']) {
-                    sh '''
-                        # Activate Ansible virtual environment
-                        . /opt/ansible-venv/bin/activate
+	stage('Deploy using Ansible') {
+	    steps {
+		echo 'Deploying application via Ansible...'
+		sshagent(['ec2_ssh_id']) {
+		    sh '''
+			# Activate Ansible virtual environment
+			. /opt/ansible-venv/bin/activate
+
+			# Prepare dynamic inventory
 			mkdir -p ansible
+			echo "[web]" > ansible/inventory.ini
+			echo "$EC2_HOST ansible_user=ubuntu" >> ansible/inventory.ini
 
-                        # Prepare dynamic inventory
-                        echo "[web]" > ansible/inventory.ini
-                        echo "$EC2_HOST ansible_user=ubuntu" >> ansible/inventory.ini
+			# Run playbook from the Jenkins workspace
+			ansible-playbook -i ansible/inventory.ini ${WORKSPACE}/ansible/deploy.yml \
+			    --extra-vars "firebase_key=${FIREBASE_KEY_BASE64}"
+		    '''
+		}
+	    }
+	}
 
-                        # Run playbook
-                        ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
-                        --extra-vars "firebase_key=${FIREBASE_KEY_BASE64}"
-                    '''
-                }
-            }
-        }
 
-        stage('Smoke Tests') {
+	stage('Smoke Tests') {
             steps {
                 echo 'Running smoke tests...'
                 sh '''
