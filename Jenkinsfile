@@ -121,6 +121,7 @@ pipeline {
                     sh '''
                         # Activate Ansible virtual environment
                         . /opt/ansible-venv/bin/activate
+			mkdir -p ansible
 
                         # Prepare dynamic inventory
                         echo "[web]" > ansible/inventory.ini
