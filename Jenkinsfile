@@ -7,7 +7,6 @@ pipeline {
     environment {
         FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
         EC2_USER = 'ubuntu'
-        //EC2_HOST = '16.171.20.34'
     }
 
     options {
@@ -26,16 +25,15 @@ pipeline {
 
         stage('Checkout Master') {
             steps {
-                echo 'Cloning master branch.......'
+                echo 'Cloning master branch...'
                 git branch: 'master',
                     url: 'https://github.com/Pavithrap7/to_do_app.git'
             }
         }
 
-
         stage('Install Python & Dependencies') {
             steps {
-                echo 'Setting up virtual environment...'
+                echo 'Setting up virtual environment for tests...'
                 sh '''
                     set -e
                     python3 -m venv venv
@@ -50,6 +48,7 @@ pipeline {
             steps {
                 echo 'Running pytest...'
                 sh '''
+                    . venv/bin/activate
                     venv/bin/pytest test/test_main.py -v --maxfail=1 --disable-warnings --junitxml=report.xml
                 '''
                 junit 'report.xml'
@@ -59,13 +58,11 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 echo 'Creating infrastructure with Terraform...'
-
                 withCredentials([usernamePassword(
                     credentialsId: 'jenkin_cred',
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-
                     sh '''
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -79,15 +76,14 @@ pipeline {
                 }
             }
         }
+
         stage('Get EC2 IP') {
             steps {
-
                 withCredentials([usernamePassword(
                     credentialsId: 'jenkin_cred',
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-
                     script {
                         env.EC2_HOST = sh(
                             script: '''
@@ -100,113 +96,54 @@ pipeline {
                         ).trim()
                     }
                 }
-
                 echo "EC2 IP is ${EC2_HOST}"
             }
         }
-		
-	stage('Install Ansible') {
-	    steps {
-		echo 'Installing Ansible in Jenkins container...'
-		sh '''
-		# Make sure package lists are updated
-		apt-get update -y
 
-		# Install prerequisites
-		apt-get install -y software-properties-common python3 python3-venv python3-pip git sshpass
-
-		# Add Ansible PPA and install
-		apt-add-repository --yes --update ppa:ansible/ansible
-		apt-get install -y ansible
-
-		# Verify installation
-		ansible --version
-		'''
-	    }
-	}
-	
-	stage('Deploy using Ansible') {
-	    steps {
-		echo 'Deploying application via Ansible...'
-		sshagent(['ec2_ssh_id']) {
-		    sh '''
-		    # Create dynamic inventory
-		    echo "[web]" > ansible/inventory.ini
-		    echo "$EC2_HOST ansible_user=ubuntu" >> ansible/inventory.ini
-
-		    # Run playbook
-		    ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --extra-vars "firebase_key=${FIREBASE_KEY_BASE64}"
-		    '''
-		}
-	    }
-	}
-
-
-
-
-//        stage('Deploy to EC2') {
-//            steps {
-//                echo 'Deploying application to EC2...'
-//
-                //withCredentials([file(credentialsId: 'firebase_key_id_file', variable: 'FIREBASE_KEY_PATH')]) {
-                //    sh """
-                //        scp -o StrictHostKeyChecking=no $FIREBASE_KEY_PATH ${EC2_USER}@${EC2_HOST}:~/application/firebase_key.b64
-                //    """
-                //}
-
-//                sshagent(['ec2_ssh_id']) {
-//                    sh """
-//                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
-//                        set -e
-//
-//                        sudo apt update -y
-//                        sudo apt install -y python3 python3-pip python3-venv git
-//                        # Remove app folder only if it exists
-//                        rm -rf "/home/ubuntu/application"
-//                        mkdir -p "/home/ubuntu/application"
-//
-//                        cd "/home/ubuntu/application"
-//
-//                        if [ ! -d ".git" ]; then
-//                            git clone -b master https://github.com/Pavithrap7/to_do_app.git .
-//                        else
-//                            git pull origin master
-//                        fi
-//
-//                        if [ ! -d "venv" ]; then
-//                            python3 -m venv venv
-//                        fi
-//
-//                        source venv/bin/activate
-//                        #export FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}'
-//                        #export FIREBASE_KEY_BASE64="${FIREBASE_KEY_BASE64}"
-//                        #export FIREBASE_KEY_BASE64=\$(cat ~/application/firebase_key.b64)
-//                        #echo "$FIREBASE_KEY_BASE64" | base64 --decode > firebase_key.b64
-//                        #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
-//                        #export FIREBASE_KEY_BASE64=\$(cat firebase_key.b64)
-//                        pip install --upgrade pip
-//                        pip install -r requirements.txt
-//
-//                        pkill -f main.py || true
-//                        #echo "${FIREBASE_KEY_BASE64}" | base64 --decode > firebase_key.b64
-//                        nohup env FIREBASE_KEY_BASE64='${FIREBASE_KEY_BASE64}' \
-//                        venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
-//EOF
-//                    """
-//                }
-//            }
-//        }
-
-        stage('Smoke Tests') {
+        stage('Install Ansible') {
             steps {
+                echo 'Creating virtual environment for Ansible and installing it...'
                 sh '''
-                    cat test/test_smoke.py
                     set -e
-                    . venv/bin/activate
-                    pytest test/test_smoke.py --base-url=http://$EC2_HOST:8000 -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml'''
-                junit 'smoke_report.xml'
+                    python3 -m venv /opt/ansible-venv
+                    source /opt/ansible-venv/bin/activate
+                    pip install --upgrade pip
+                    pip install ansible
+                    ansible --version
+                '''
             }
         }
 
+        stage('Deploy using Ansible') {
+            steps {
+                echo 'Deploying application via Ansible...'
+                sshagent(['ec2_ssh_id']) {
+                    sh '''
+                        # Activate Ansible virtual environment
+                        source /opt/ansible-venv/bin/activate
+
+                        # Prepare dynamic inventory
+                        echo "[web]" > ansible/inventory.ini
+                        echo "$EC2_HOST ansible_user=ubuntu" >> ansible/inventory.ini
+
+                        # Run playbook
+                        ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
+                        --extra-vars "firebase_key=${FIREBASE_KEY_BASE64}"
+                    '''
+                }
+            }
+        }
+
+        stage('Smoke Tests') {
+            steps {
+                echo 'Running smoke tests...'
+                sh '''
+                    . venv/bin/activate
+                    pytest test/test_smoke.py --base-url=http://$EC2_HOST:8000 \
+                    -v --maxfail=1 --disable-warnings --junitxml=smoke_report.xml
+                '''
+                junit 'smoke_report.xml'
+            }
+        }
     }
-} 
+}
