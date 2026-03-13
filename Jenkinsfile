@@ -106,7 +106,7 @@ pipeline {
                 sh '''
                     set -e
                     python3 -m venv /opt/ansible-venv
-                    source /opt/ansible-venv/bin/activate
+                    . /opt/ansible-venv/bin/activate
                     pip install --upgrade pip
                     pip install ansible
                     ansible --version
