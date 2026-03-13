@@ -120,7 +120,7 @@ pipeline {
                 sshagent(['ec2_ssh_id']) {
                     sh '''
                         # Activate Ansible virtual environment
-                        source /opt/ansible-venv/bin/activate
+                        . /opt/ansible-venv/bin/activate
 
                         # Prepare dynamic inventory
                         echo "[web]" > ansible/inventory.ini
