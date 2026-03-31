@@ -10,6 +10,8 @@ pipeline {
         AWS_REGION = 'eu-north-1'              // AWS region
         REPO_NAME = 'todo_app'                // ECR repo name
         IMAGE_NAME = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:latest"
+	FIREBASE_KEY_BASE64 = credentials('firebase_key_id')
+        EC2_USER = 'ubuntu'
     }
 
     options {
