@@ -7,7 +7,7 @@ module "eks" {
   version = "~> 20.0"
 
   cluster_name    = "todo-eks"
-  cluster_version = "1.29"
+  cluster_version = "1.28"
 
   vpc_id = "vpc-07c41864bc5cb5db1"
 
