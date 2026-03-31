@@ -27,6 +27,6 @@ module "eks" {
   }
 }
 
-output "kubeconfig" {
-  value = module.eks.kubeconfig
+output "cluster_name" {
+  value = module.eks.cluster_name
 }

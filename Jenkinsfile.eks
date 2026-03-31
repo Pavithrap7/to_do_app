@@ -65,7 +65,8 @@ pipeline {
                         terraform apply -auto-approve
 
                         # Output kubeconfig for Jenkins to use
-                        terraform output -raw kubeconfig > kubeconfig.yaml
+                        #terraform output -raw kubeconfig > kubeconfig.yaml
+			aws eks update-kubeconfig --region ${AWS_REGION} --name todo-eks
                     '''
                 }
             }
