@@ -24,6 +24,7 @@ module "eks" {
     "subnet-029f34d1fc6fa53f1"
   ]
 create_kms_key = false
+cluster_encryption_config = []  # <- make it empty
 
   eks_managed_node_groups = {
     default = {
