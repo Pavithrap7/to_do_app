@@ -65,6 +65,36 @@ stages {
 		    rm -rf .terraform
 		    terraform init -reconfigure
 
+
+
+		    echo "====== DEBUG START ======"
+
+		    echo "Current directory:"
+		    pwd
+
+		    echo "Terraform backend config:"
+		    cat .terraform/terraform.tfstate 2>/dev/null || echo "No local state file"
+
+		    echo "Pulling remote state:"
+		    terraform state pull || echo "Failed to pull remote state"
+
+		    echo "Listing Terraform state:"
+		    terraform state list || echo "No resources in state"
+
+		    echo "Check AWS clusters:"
+		    aws eks list-clusters --region ${AWS_REGION} --no-cli-pager
+
+		    echo "Check specific cluster:"
+		    aws eks describe-cluster --name todo-eks --region ${AWS_REGION} --no-cli-pager || echo "Cluster not found"
+
+		    echo "====== DEBUG END ======"
+
+
+
+
+
+
+
 		    if aws eks list-clusters --region ${AWS_REGION} --no-cli-pager | grep -q 'todo-eks'; then
 			    echo "Cluster exists in AWS."
 
