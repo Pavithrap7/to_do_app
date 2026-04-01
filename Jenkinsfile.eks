@@ -64,6 +64,7 @@ stages {
                     cd terraform_project/eks
 
                     terraform init -reconfigure
+		    terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
 		    terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
                     terraform apply -auto-approve
 
