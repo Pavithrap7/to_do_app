@@ -61,11 +61,17 @@ stages {
                     export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                     export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
-                    cd terraform_project/eks
-
+              
+		    if aws eks list-clusters --region ${AWS_REGION} --no-cli-pager | grep -q 'todo-eks'; then
+			    terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
+			    terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
+		    fi
+		    cd terraform_project/eks
+		    rm -rf .terraform
                     terraform init -reconfigure
 		    terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
 		    terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
+		    terraform plan
                     terraform apply -auto-approve
 
                     aws eks update-kubeconfig --region ${AWS_REGION} --name todo-eks
