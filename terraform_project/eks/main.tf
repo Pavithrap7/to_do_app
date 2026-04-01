@@ -2,6 +2,14 @@ provider "aws" {
   region = "eu-north-1"
 }
 
+terraform {
+  backend "s3" {
+    bucket = "todo-eks-terraform-state-511197441763"
+    key    = "eks/terraform.tfstate"
+    region = "eu-north-1"
+  }
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
@@ -15,6 +23,7 @@ module "eks" {
     "subnet-0212d84eb91026c21",
     "subnet-029f34d1fc6fa53f1"
   ]
+create_kms_key = false
 
   eks_managed_node_groups = {
     default = {
