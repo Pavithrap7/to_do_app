@@ -63,6 +63,7 @@ stages {
 
 		    cd terraform_project/eks
 		    rm -rf .terraform
+		    terraform init -reconfigure
 
               
 		    if aws eks list-clusters --region ${AWS_REGION} --no-cli-pager | grep -q 'todo-eks'; then
@@ -71,7 +72,6 @@ stages {
 		    fi
 		
 		   
-                    terraform init -reconfigure
 		    terraform plan
                     terraform apply -auto-approve
 
