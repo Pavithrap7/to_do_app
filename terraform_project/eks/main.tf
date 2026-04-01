@@ -23,6 +23,7 @@ module "eks" {
       min_size     = 1
 
       instance_types = ["t3.micro"]
+      ami_type = "AL2_x86_64"
     }
   }
 }
