@@ -65,10 +65,9 @@ stages {
 		    rm -rf .terraform
 		    terraform init -reconfigure
 
-              
-		    if aws eks list-clusters --region ${AWS_REGION} --no-cli-pager | grep -q 'todo-eks'; then
-			    terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
-			    terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
+		    if ! terraform state list | grep -q 'module.eks.aws_eks_cluster.this[0]'; then
+			terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
+			terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
 		    fi
 		
 		   
