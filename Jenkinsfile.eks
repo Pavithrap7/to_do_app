@@ -65,10 +65,23 @@ stages {
 		    rm -rf .terraform
 		    terraform init -reconfigure
 
-		    if ! terraform state list | grep -q 'module.eks.aws_eks_cluster.this[0]'; then
-			terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
-			terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
+		    if aws eks list-clusters --region ${AWS_REGION} --no-cli-pager | grep -q 'todo-eks'; then
+			    echo "Cluster exists in AWS."
+
+			    # Only import if Terraform state doesn't already manage it
+			    if ! terraform state list | grep -q 'module.eks.aws_eks_cluster.this[0]'; then
+				echo "Resource not in Terraform state, importing..."
+				terraform import 'module.eks.aws_eks_cluster.this[0]' todo-eks
+				terraform import 'module.eks.aws_cloudwatch_log_group.this[0]' '/aws/eks/todo-eks/cluster'
+			    else
+				echo "Resource already managed by Terraform, skipping import."
+			    fi
+
+		    else
+		        echo "Cluster not found in AWS. Terraform will create it."
 		    fi
+
+
 		
 		   
 		    terraform plan
