@@ -10,3 +10,17 @@ __pycache__/
 # Firebase secret
 app/firebase_key.json
 
+# Terraform local state
+*.tfstate
+*.tfstate.*
+
+# Terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Crash logs
+crash.log
+
+# IDE / OS files
+.vscode/
+.DS_Store
