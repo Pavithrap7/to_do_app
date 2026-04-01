@@ -86,7 +86,10 @@ stages {
 
 		    echo "Check specific cluster:"
 		    aws eks describe-cluster --name todo-eks --region ${AWS_REGION} --no-cli-pager || echo "Cluster not found"
-
+		    aws eks describe-cluster \
+		      --name todo-eks \
+		      --region eu-north-1 \
+		      --query "cluster.{version:version,role:roleArn,encryption:encryptionConfig}"
 		    echo "====== DEBUG END ======"
 
 

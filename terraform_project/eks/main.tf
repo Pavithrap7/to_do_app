@@ -15,7 +15,7 @@ module "eks" {
   version = "~> 20.0"
 
   cluster_name    = "todo-eks"
-  cluster_version = "1.28"
+  cluster_version = "1.29"
 
   vpc_id = "vpc-07c41864bc5cb5db1"
 
@@ -23,8 +23,7 @@ module "eks" {
     "subnet-0212d84eb91026c21",
     "subnet-029f34d1fc6fa53f1"
   ]
-create_kms_key = false
-cluster_encryption_config = []  # <- make it empty
+
 
   eks_managed_node_groups = {
     default = {
