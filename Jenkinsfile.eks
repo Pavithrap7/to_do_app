@@ -62,7 +62,7 @@ pipeline {
                         cd terraform_project/eks
 
                         terraform init
-			#terraform destroy -auto-approve
+			terraform destroy -auto-approve
                         terraform apply -auto-approve
 
                         # Output kubeconfig for Jenkins to use
